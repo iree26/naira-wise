@@ -146,11 +146,11 @@ const SCRIPT = [
   { type: 'agent-callout', text: '✓ ₦80,000 available to invest monthly', delay: 700 },
 
   // Step 3 — Age
-  { type: 'agent', text: "Nice. How old are you?", delay: 900 },
+  { type: 'agent', text: 'Nice. How old are you?', delay: 900 },
   { type: 'user', text: '28', delay: 1000 },
 
   // Step 4 — Timeframe
-  { type: 'agent', text: "And how long are you planning to invest for?", delay: 900 },
+  { type: 'agent', text: 'And how long are you planning to invest for?', delay: 900 },
   { type: 'user', text: '1 to 3 years', delay: 1100 },
 
   // Step 5 — Goal
@@ -166,8 +166,67 @@ const SCRIPT = [
   { type: 'recommendations', delay: 800 },
 ]
 
+function DemoSection() {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.3 })
+
+  return (
+    <section ref={ref} className="px-6 py-24 max-w-5xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-12"
+      >
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 mb-4">
+          <span className="text-xs text-gold font-medium">⚡ Live demo</span>
+        </div>
+        <h2 className="text-3xl md:text-5xl font-bold mb-4">
+          See NairaWise in action.
+        </h2>
+        <p className="text-muted max-w-xl mx-auto">
+          A real conversation. Real market data. Real recommendations — tailored to you.
+        </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7, delay: 0.2 }}
+        className="relative"
+      >
+        {/* Glow behind chat */}
+        <div className="absolute inset-0 bg-accent/10 blur-3xl rounded-3xl" />
+
+        <div className="relative bg-surface/80 backdrop-blur border border-border rounded-2xl overflow-hidden shadow-2xl">
+          {/* Chat header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-bg/40">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <span className="text-bg font-bold text-sm">N</span>
+              </div>
+              <div>
+                <div className="font-semibold text-sm">NairaWise</div>
+                <div className="flex items-center gap-1.5 text-xs text-muted">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  Online · Researching market live
+                </div>
+              </div>
+            </div>
+            <div className="text-xs text-muted font-mono">DEMO</div>
+          </div>
+
+          {/* Chat body */}
+          <ChatPlayback inView={inView} />
+        </div>
+      </motion.div>
+    </section>
+  )
+}
+
 function ChatPlayback({ inView }) {
   const [visible, setVisible] = useState([])
+  const scrollRef = useRef(null)
 
   useEffect(() => {
     if (!inView) return
@@ -182,11 +241,25 @@ function ChatPlayback({ inView }) {
       }
     }
     run()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [inView])
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }, [visible])
+
   return (
-    <div className="p-6 md:p-8 space-y-4 min-h-[500px] max-h-[600px] overflow-hidden">
+    <div
+      ref={scrollRef}
+      className="p-6 md:p-8 space-y-4 min-h-[600px] max-h-[750px] overflow-y-auto scroll-smooth"
+    >
       {visible.map((msg) => (
         <ChatMessage key={msg.id} msg={msg} />
       ))}
@@ -204,6 +277,21 @@ function ChatMessage({ msg }) {
         className="flex justify-end"
       >
         <div className="max-w-[80%] bg-accent text-bg rounded-2xl rounded-br-sm px-4 py-2.5 font-medium">
+          {msg.text}
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (msg.type === 'agent-callout') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="flex justify-start"
+      >
+        <div className="bg-accent/10 border border-accent/30 rounded-xl px-4 py-2 text-sm text-accent font-medium">
           {msg.text}
         </div>
       </motion.div>
