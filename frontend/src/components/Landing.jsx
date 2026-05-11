@@ -136,70 +136,35 @@ export default function Landing() {
 // ─────────────────────────────────────────────
 
 const SCRIPT = [
-  { type: 'user', text: 'I earn ₦200,000 monthly and spend about ₦120,000.', delay: 800 },
-  { type: 'agent-thinking', text: 'Analyzing your profile...', delay: 1000 },
+  // Step 1 — Income
+  { type: 'agent', text: "Hey 👋 I'm NairaWise. Let's start — what's your monthly income?", delay: 600 },
+  { type: 'user', text: '₦200,000', delay: 1200 },
+
+  // Step 2 — Expenses
+  { type: 'agent', text: 'Got it. And roughly how much do you spend each month?', delay: 900 },
+  { type: 'user', text: '₦120,000', delay: 1100 },
+  { type: 'agent-callout', text: '✓ ₦80,000 available to invest monthly', delay: 700 },
+
+  // Step 3 — Age
+  { type: 'agent', text: "Nice. How old are you?", delay: 900 },
+  { type: 'user', text: '28', delay: 1000 },
+
+  // Step 4 — Timeframe
+  { type: 'agent', text: "And how long are you planning to invest for?", delay: 900 },
+  { type: 'user', text: '1 to 3 years', delay: 1100 },
+
+  // Step 5 — Goal
+  { type: 'agent', text: "Last one — what's your main goal?", delay: 900 },
+  { type: 'user', text: 'Beat inflation', delay: 1100 },
+
+  // Agent processing
+  { type: 'agent-thinking', text: 'Analyzing your profile...', delay: 900 },
   { type: 'agent-search', tools: ['CBN T-bill rates', 'NGX top performers', 'Inflation data'], delay: 1500 },
-  { type: 'agent', text: "You have ₦80,000 to invest monthly. Here's what I'd do with it:", delay: 1200 },
+
+  // Recommendations
+  { type: 'agent', text: "Based on your profile and live market data, here's what I'd do:", delay: 1100 },
   { type: 'recommendations', delay: 800 },
 ]
-
-function DemoSection() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, amount: 0.3 })
-
-  return (
-    <section ref={ref} className="px-6 py-24 max-w-5xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-12"
-      >
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 mb-4">
-          <span className="text-xs text-gold font-medium">⚡ Live demo</span>
-        </div>
-        <h2 className="text-3xl md:text-5xl font-bold mb-4">
-          See NairaWise in action.
-        </h2>
-        <p className="text-muted max-w-xl mx-auto">
-          A real conversation. Real market data. Real recommendations — tailored to you.
-        </p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.7, delay: 0.2 }}
-        className="relative"
-      >
-        {/* Glow behind chat */}
-        <div className="absolute inset-0 bg-accent/10 blur-3xl rounded-3xl" />
-
-        <div className="relative bg-surface/80 backdrop-blur border border-border rounded-2xl overflow-hidden shadow-2xl">
-          {/* Chat header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-bg/40">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <span className="text-bg font-bold text-sm">N</span>
-              </div>
-              <div>
-                <div className="font-semibold text-sm">NairaWise</div>
-                <div className="flex items-center gap-1.5 text-xs text-muted">
-                  <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                  Online · Researching market live
-                </div>
-              </div>
-            </div>
-            <div className="text-xs text-muted font-mono">DEMO</div>
-          </div>
-
-          {/* Chat body */}
-          <ChatPlayback inView={inView} />
-        </div>
-      </motion.div>
-    </section>
-  )
-}
 
 function ChatPlayback({ inView }) {
   const [visible, setVisible] = useState([])
