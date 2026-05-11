@@ -1,12 +1,13 @@
-import { motion } from 'motion/react'
+import { motion, useInView } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, TrendingUp, Shield, Sparkles } from 'lucide-react'
+import { useRef, useState, useEffect } from 'react'
+import { ArrowRight, TrendingUp, Shield, Sparkles, Search, Check } from 'lucide-react'
 
 export default function Landing() {
   const navigate = useNavigate()
 
   return (
-    <div className="gradient-bg min-h-screen flex flex-col">
+    <div className="gradient-bg min-h-screen">
       {/* Top nav */}
       <nav className="flex items-center justify-between px-8 py-6">
         <motion.div
@@ -31,7 +32,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div className="min-h-[85vh] flex flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -75,7 +76,6 @@ export default function Landing() {
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </motion.button>
 
-        {/* Trust stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -101,15 +101,23 @@ export default function Landing() {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Scroll hint */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.4 }}
+          className="mt-16 text-xs text-muted font-mono tracking-wider"
+        >
+          ↓ SEE IT IN ACTION
+        </motion.div>
       </div>
 
-      {/* Footer signal */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.2 }}
-        className="flex items-center justify-center gap-6 py-6 text-xs text-muted"
-      >
+      {/* DEMO SECTION */}
+      <DemoSection />
+
+      {/* Footer */}
+      <div className="flex items-center justify-center gap-6 py-10 text-xs text-muted">
         <div className="flex items-center gap-1.5">
           <TrendingUp className="w-3 h-3" />
           Live market data
@@ -118,7 +126,225 @@ export default function Landing() {
           <Shield className="w-3 h-3" />
           Your data stays private
         </div>
-      </motion.div>
+      </div>
     </div>
   )
+}
+
+// ─────────────────────────────────────────────
+// DEMO CHAT SECTION
+// ─────────────────────────────────────────────
+
+const SCRIPT = [
+  { type: 'user', text: 'I earn ₦200,000 monthly and spend about ₦120,000.', delay: 800 },
+  { type: 'agent-thinking', text: 'Analyzing your profile...', delay: 1000 },
+  { type: 'agent-search', tools: ['CBN T-bill rates', 'NGX top performers', 'Inflation data'], delay: 1500 },
+  { type: 'agent', text: "You have ₦80,000 to invest monthly. Here's what I'd do with it:", delay: 1200 },
+  { type: 'recommendations', delay: 800 },
+]
+
+function DemoSection() {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.3 })
+
+  return (
+    <section ref={ref} className="px-6 py-24 max-w-5xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-12"
+      >
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 mb-4">
+          <span className="text-xs text-gold font-medium">⚡ Live demo</span>
+        </div>
+        <h2 className="text-3xl md:text-5xl font-bold mb-4">
+          See NairaWise in action.
+        </h2>
+        <p className="text-muted max-w-xl mx-auto">
+          A real conversation. Real market data. Real recommendations — tailored to you.
+        </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7, delay: 0.2 }}
+        className="relative"
+      >
+        {/* Glow behind chat */}
+        <div className="absolute inset-0 bg-accent/10 blur-3xl rounded-3xl" />
+
+        <div className="relative bg-surface/80 backdrop-blur border border-border rounded-2xl overflow-hidden shadow-2xl">
+          {/* Chat header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-bg/40">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <span className="text-bg font-bold text-sm">N</span>
+              </div>
+              <div>
+                <div className="font-semibold text-sm">NairaWise</div>
+                <div className="flex items-center gap-1.5 text-xs text-muted">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  Online · Researching market live
+                </div>
+              </div>
+            </div>
+            <div className="text-xs text-muted font-mono">DEMO</div>
+          </div>
+
+          {/* Chat body */}
+          <ChatPlayback inView={inView} />
+        </div>
+      </motion.div>
+    </section>
+  )
+}
+
+function ChatPlayback({ inView }) {
+  const [visible, setVisible] = useState([])
+
+  useEffect(() => {
+    if (!inView) return
+    let cancelled = false
+    let i = 0
+    const run = async () => {
+      for (const msg of SCRIPT) {
+        if (cancelled) return
+        await new Promise((r) => setTimeout(r, msg.delay))
+        if (cancelled) return
+        setVisible((prev) => [...prev, { ...msg, id: i++ }])
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [inView])
+
+  return (
+    <div className="p-6 md:p-8 space-y-4 min-h-[500px] max-h-[600px] overflow-hidden">
+      {visible.map((msg) => (
+        <ChatMessage key={msg.id} msg={msg} />
+      ))}
+    </div>
+  )
+}
+
+function ChatMessage({ msg }) {
+  if (msg.type === 'user') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex justify-end"
+      >
+        <div className="max-w-[80%] bg-accent text-bg rounded-2xl rounded-br-sm px-4 py-2.5 font-medium">
+          {msg.text}
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (msg.type === 'agent-thinking') {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center gap-2 text-muted text-sm"
+      >
+        <div className="flex gap-1">
+          <span className="w-2 h-2 rounded-full bg-muted animate-pulse" style={{ animationDelay: '0ms' }} />
+          <span className="w-2 h-2 rounded-full bg-muted animate-pulse" style={{ animationDelay: '150ms' }} />
+          <span className="w-2 h-2 rounded-full bg-muted animate-pulse" style={{ animationDelay: '300ms' }} />
+        </div>
+        <span className="italic">{msg.text}</span>
+      </motion.div>
+    )
+  }
+
+  if (msg.type === 'agent-search') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="space-y-1.5"
+      >
+        {msg.tools.map((tool, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.25 }}
+            className="flex items-center gap-2 text-xs text-muted"
+          >
+            <Search className="w-3 h-3 text-accent" />
+            <span>Searching:</span>
+            <span className="text-text">{tool}</span>
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: i * 0.25 + 0.4 }}
+              className="text-accent flex items-center gap-0.5"
+            >
+              <Check className="w-3 h-3" /> live
+            </motion.span>
+          </motion.div>
+        ))}
+      </motion.div>
+    )
+  }
+
+  if (msg.type === 'agent') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex justify-start"
+      >
+        <div className="max-w-[85%] bg-surface-light rounded-2xl rounded-bl-sm px-4 py-3">
+          {msg.text}
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (msg.type === 'recommendations') {
+    const recs = [
+      { name: 'Treasury Bills', risk: 'Low', ret: '18.5%', amount: '₦30,000' },
+      { name: 'Money Market Fund', risk: 'Low', ret: '12.0%', amount: '₦30,000' },
+      { name: 'NGX Bluechip Stocks', risk: 'Medium', ret: '24.0%', amount: '₦20,000' },
+    ]
+    return (
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
+        className="grid md:grid-cols-3 gap-3 pt-2"
+      >
+        {recs.map((r, i) => (
+          <motion.div
+            key={i}
+            variants={{
+              hidden: { opacity: 0, y: 15 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            transition={{ duration: 0.4 }}
+            className="bg-bg border border-border rounded-xl p-4 hover:border-accent/40 transition-colors"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted">{r.risk} risk</span>
+              <span className="text-xs font-mono text-accent">{r.ret}</span>
+            </div>
+            <div className="font-semibold mb-1 text-sm">{r.name}</div>
+            <div className="font-mono text-lg text-accent">{r.amount}</div>
+            <div className="text-xs text-muted mt-1">per month</div>
+          </motion.div>
+        ))}
+      </motion.div>
+    )
+  }
+
+  return null
 }
